@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id      String    @id @map("_id")
+  address String    @unique
+  name    String
+  did     String?
+  College College[]
+}
+
+model College {
+  id           String     @id @map("_id")
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  instructorId String
+  student      Student    @relation(fields: [studentIds], references: [id])
+  studentIds   String[]
+}
+
+model Instructor {
+  id      String    @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  College College[]
+}
+
+model Quiz {
+  id          String      @id @map("_id")
+  name        String
+  questions   Question[]
+  levelPassed LevelPassed
+}
+
+model Question {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  question      String
+  options       String[]
+  correctOption String
+  level         Level
+  quiz          Quiz     @relation(fields: [quizId], references: [id])
+  quizId        String
+}
+
+enum LevelPassed {
+  none
+  Beginner
+  Intermediate
+  Expert
+}
+
+enum Level {
+  Beginner
+  Intermediate
+  Expert
+}
