@@ -8,32 +8,29 @@ datasource db {
 }
 
 model Student {
-  id      String    @id @map("_id")
-  address String    @unique
-  name    String
-  did     String?
-  College College[]
+  id               String    @id @map("_id")
+  address          String    @unique
+  name             String
+  did              String?
+  College          College[] @relation(references: [id], fields: [collegeAddresses])
+  collegeAddresses String[]
 }
 
 model College {
-  id           String     @id @map("_id")
-  instructor   Instructor @relation(fields: [instructorId], references: [id])
-  instructorId String
-  student      Student    @relation(fields: [studentIds], references: [id])
-  studentIds   String[]
-}
-
-model Instructor {
-  id      String    @id @default(auto()) @map("_id") @db.ObjectId
-  name    String
-  College College[]
+  id                String    @id @map("_id")
+  name              String
+  address           String    @unique
+  students          Student[] @relation(references: [id], fields: [studentsAddresses])
+  studentsAddresses String[]
+  Quiz              Quiz[]
 }
 
 model Quiz {
-  id          String      @id @map("_id")
-  name        String
-  questions   Question[]
-  levelPassed LevelPassed
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  college   College?   @relation(references: [address], fields: [collegeId])
+  collegeId String     @unique
+  questions Question[] @relation()
 }
 
 model Question {
@@ -42,8 +39,8 @@ model Question {
   options       String[]
   correctOption String
   level         Level
-  quiz          Quiz     @relation(fields: [quizId], references: [id])
-  quizId        String
+  Quiz          Quiz?    @relation(fields: [quizId], references: [id])
+  quizId        String?  @db.ObjectId
 }
 
 enum LevelPassed {

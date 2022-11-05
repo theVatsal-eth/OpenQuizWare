@@ -1,5 +1,5 @@
 import { Server, Socket } from 'socket.io'
-import log from 'src/logger'
+import log from '../logger'
 
 const EVENTS = {
     connection: "connection",
@@ -7,6 +7,7 @@ const EVENTS = {
         SEND_ROOM_MESSAGE: "SEND_ROOM_MESSAGE",
         JOIN_ROOM: "JOIN_ROOM",
         CREATE_ROOM: "CREATE_ROOM",
+        CLOSE_ROOM: "CLOSE_ROOM"
     },
     SERVER: {
         JOINED_ROOM: "JOINED_ROOM",
@@ -16,7 +17,10 @@ const EVENTS = {
     }
 }
 
-const rooms: Record<string, { ownerAddress: string }> = {}
+const rooms: Record<string, {
+    ownerAddress: string,
+    ownerLive: boolean
+}> = {}
 
 function openSocket({ io }: { io: Server }) {
 
@@ -31,31 +35,40 @@ function openSocket({ io }: { io: Server }) {
             const roomId = quizId
 
             rooms[roomId] = {
-                ownerAddress: ownerAddress
+                ownerAddress: ownerAddress,
+                ownerLive: false
             }
+
+            log.info(`Room created for ${ownerAddress} with ID ${quizId}`)
 
             socket.emit(EVENTS.SERVER.ROOM_CREATED, rooms[roomId])
         })
 
-        socket.on(EVENTS.CLIENT.JOIN_ROOM, (roomId: string) => {
+        socket.on(EVENTS.CLIENT.JOIN_ROOM, (roomId: string, userAddress: string) => {
 
             if (!rooms[roomId]) {
                 socket.emit(EVENTS.SERVER.ERROR, "Room Doesn't Exist")
-            } else {
+            }
+            else if (rooms[roomId].ownerAddress === userAddress) {
                 socket.join(roomId)
-                socket.emit(EVENTS.SERVER.JOINED_ROOM, "You have joined the quiz!")
+            }
+            else if (!rooms[roomId].ownerLive) {
+                socket.to(roomId).emit(EVENTS.SERVER.ERROR, {
+                    errotType: "Host not live",
+                    message: "Host has not joined the Quiz Room"
+                })
+            }
+            else {
+                socket.join(roomId)
+                socket.emit(EVENTS.SERVER.JOINED_ROOM, "Room joined!")
+                log.info("Someone joined the room!")
             }
 
         })
 
-        socket.on(EVENTS.CLIENT.SEND_ROOM_MESSAGE, (message: string, roomId: string, userName: string) => {
-            const date = new Date()
-
-            socket.to(roomId).emit(EVENTS.SERVER.ROOM_MESSAGE, {
-                message,
-                userName,
-                time: `${date.getHours()}:${date.getMinutes()}`
-            })
+        socket.on(EVENTS.CLIENT.CLOSE_ROOM, (roomId: string) => {
+            socket.leave(roomId)
+            delete rooms[roomId]
         })
     })
 
