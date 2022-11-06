@@ -31,11 +31,11 @@ model Quiz {
   college              College?   @relation(references: [address], fields: [collegeId])
   collegeId            String     @unique
   questions            Question[] @relation()
-  beginnerAddress      String?    @unique
+  beginnerAddress      String?    
   beginnerImageURI     String?
-  intermediateAddress  String?    @unique
+  intermediateAddress  String?    
   intermediateImageURI String?
-  expertAddress        String?    @unique
+  expertAddress        String?    
   expertImageURI       String?
 }
 
