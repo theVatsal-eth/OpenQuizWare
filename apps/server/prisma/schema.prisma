@@ -26,11 +26,17 @@ model College {
 }
 
 model Quiz {
-  id        String     @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  college   College?   @relation(references: [address], fields: [collegeId])
-  collegeId String     @unique
-  questions Question[] @relation()
+  id                   String     @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  college              College?   @relation(references: [address], fields: [collegeId])
+  collegeId            String     @unique
+  questions            Question[] @relation()
+  beginnerAddress      String?    @unique
+  beginnerImageURI     String?
+  intermediateAddress  String?    @unique
+  intermediateImageURI String?
+  expertAddress        String?    @unique
+  expertImageURI       String?
 }
 
 model Question {
