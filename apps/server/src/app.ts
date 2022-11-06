@@ -6,14 +6,14 @@ import { env } from 'process'
 
 import log from './logger'
 import openSocket from './socket'
-import { 
+import {
     getAllQuizesByCollegeAddress,
     getAllStudents,
     getCollegesJoinedByStudent,
     getStudentsByAddress,
     getStudentsByCollege
 } from "../prisma/getQueries"
-import { 
+import {
     addCollege,
     addStudent,
     addStudentToCollege,
@@ -35,8 +35,9 @@ app.get("/students", async (_, res) => {
     log.info("/Students")
     try {
         const students = await getAllStudents()
+        if (students.length === 0) throw new Error("No Students")
         log.info(students)
-        res.send({ students })
+        res.send(students)
     } catch (error) {
         res.status(503).send(error)
     }
@@ -61,11 +62,16 @@ app.get("/students/:studentAddress", async (req, res) => {
     const studentAddress = req.params.studentAddress
 
     if (!studentAddress) {
-        res.status(503).send("Invalid Data")
+        throw new Error("Invalid student address")
     }
 
     try {
         const student = await getStudentsByAddress(studentAddress)
+        log.info(student)
+        if (student === null) {
+            log.info("in the null check")
+            throw new Error("No Students found")
+        }
         res.status(200).send(student)
     } catch (error) {
         res.status(503).send(error)

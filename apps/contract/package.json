@@ -1,0 +1,17 @@
+{
+  "name": "contracts",
+  "scripts": {
+    "build": "npx thirdweb@latest detect",
+    "deploy": "npx thirdweb@latest deploy",
+    "release": "npx thirdweb@latest release"
+  },
+  "devDependencies": {
+    "hardhat": "^2.10.1"
+  },
+  "dependencies": {
+    "@thirdweb-dev/contracts": "^3.2.0"
+  },
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT"
+}
